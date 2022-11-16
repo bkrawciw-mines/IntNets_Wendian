@@ -83,12 +83,39 @@ def ws(params):
 
 #General clutering formula
 def __clustHelper(W):
-    num = W @ W.getH() @ W #Numerator
-    O = sparse.csr_matrix(np.ones_like(W.todense())) #Ones matrix
-    norm = (np.abs(W) @ O @ np.abs(W)).diagonal() #Normalization term
-    norm += (norm < TOL) #Preventing division by zero
-    output = num.diagonal() / norm
-    avg = np.mean(abs(output))
+    #These functions only work for dense matrices
+    Wdense = W
+    if sparse.issparse(W):
+        Wdense = W.todense()
+    
+    #Record the network size
+    N = np.min(W.shape)
+    
+    #Compute the numerator
+    num = np.zeros(N)
+    with np.nditer(num, op_flags = ['writeonly'], flags = ['f_index']) as iterator:
+        #Record index 
+        i = iterator.index
+        #Compare paths through node i to direct paths
+        mat = np.outer(Wdense[:, i], Wdense[i, :]) + Wdense
+        #Take the 1 norm and record the sum
+        norm = np.linalg.norm(np.ravel(mat), 1)
+        num[...] = norm
+    
+    #Compute the denominator
+    den = np.zeros(N)
+    with np.nditer(den, op_flags = ['writeonly'], flags = ['f_index']) as iterator:
+        #Record index 
+        i = iterator.index
+        #Compare paths through node i to path of 1
+        mat = np.abs(np.outer(Wdense[:, i], Wdense[i, :])) + 1.0
+        #Sum and record
+        norm = np.sum(np.ravel(mat))
+        den[...] = norm
+    
+    #Meshing vector, scaled and shifted to match unweighted clustering
+    Mvec = 2.0 * (num / den) - 1.0
+    avg = np.mean(Mvec)
     return avg
     
 #Returns the traditional, real-valued clustering coefficient
@@ -140,7 +167,6 @@ def APS(W):
     APS = np.mean(np.abs(P), (0, 1))
     return(APS)
 
-'''
 #Testing the functions
 ring = makeRing(100, 18)
 print(ring)
@@ -153,8 +179,7 @@ Cr = Creal(W)
 print(Cr)
 M = Mesh(W)
 print(M)
-ap = APL(W)
+ap = APS(W)
 print(ap)
 sps = SPS(W)
 print(sps)
-'''
