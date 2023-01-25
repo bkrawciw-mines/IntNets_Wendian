@@ -94,33 +94,39 @@ def __clustHelper(W):
     #Compute the numerator
     num = np.zeros(N)
     with np.nditer(num, op_flags = ['writeonly'], flags = ['f_index']) as iterator:
-        #Record index 
-        i = iterator.index
-        #Compare paths through node i to direct paths
-        mat = np.outer(Wdense[:, i], Wdense[i, :]) + Wdense
-        #Take the 1 norm and record the sum
-        norm = np.linalg.norm(np.ravel(mat), 1)
-        num[...] = norm
+        for entry in iterator:
+            #Record index 
+            i = iterator.index
+            #Compare paths through node i to shortcuts
+            throughPaths = np.outer(Wdense[:, i], Wdense[i, :])
+            adjShortcuts = np.abs(throughPaths + Wdense) - np.abs(throughPaths)
+            mat = (abs(throughPaths)).multiply(adjShortcuts)
+            #Sum all triads on node i
+            norm = np.sum(np.ravel(mat))
+            num[i] = norm
     
     #Compute the denominator
     den = np.zeros(N)
     with np.nditer(den, op_flags = ['writeonly'], flags = ['f_index']) as iterator:
-        #Record index 
-        i = iterator.index
-        #Compare paths through node i to path of 1
-        mat = np.abs(np.outer(Wdense[:, i], Wdense[i, :])) + 1.0
-        #Sum and record
-        norm = np.sum(np.ravel(mat))
-        den[...] = norm
+        for entry in iterator:
+            #Record index 
+            i = iterator.index
+            #Compare paths through node i to path of 1
+            throughPaths = np.outer(Wdense[:, i], Wdense[i, :])
+            #adjShortcuts is effectively set to 1 by ignoring it
+            mat = np.abs(throughPaths)
+            #Sum and record
+            norm = np.sum(np.ravel(mat))
+            den[i] = norm
     
     #Meshing vector, scaled and shifted to match unweighted clustering
-    Mvec = 2.0 * (num / den) - 1.0
+    Mvec = np.divide(num, den, out=np.zeros_like(num), where = den != 0.0)
     avg = np.mean(Mvec)
     return avg
     
 #Returns the traditional, real-valued clustering coefficient
 def Creal(W):
-    return __clustHelper(abs(W))
+    return __clustHelper(np.abs(W))
 
 #Returns the magnitude of the interferometric meshing
 def Mesh(W):
@@ -167,19 +173,21 @@ def APS(W):
     APS = np.mean(np.abs(P), (0, 1))
     return(APS)
 
+'''
 #Testing the functions
 ring = makeRing(100, 18)
-print(ring)
+#print(ring)
 rewired = rewire(ring, 0.1)
-print(rewired)
-W = ws([1000, 4, 1.0, np.pi / 4])
-print(W.diagonal())
-print(W)
+#print(rewired)
+W = ws([100, 8, 1.0, np.pi / 4])
+#print(W.diagonal())
+#print(W)
 Cr = Creal(W)
 print(Cr)
 M = Mesh(W)
 print(M)
 ap = APS(W)
-print(ap)
+#print(ap)
 sps = SPS(W)
-print(sps)
+#print(sps)
+'''

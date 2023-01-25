@@ -16,17 +16,17 @@ import csv
 import itertools
 
 #Name for the output file
-outFileName = 'IntTestsData.csv'
+outFileName = 'IntTestsData_pc.csv'
 
 #Create the parameter space for testing
-Nrange = np.arange(start = 100, stop = 200, step = 100)
+Nrange = [300]
 #Small networks need more trials
 Ns = []
 for Nval in Nrange:
     reps = Nrange[-1] // Nval
     [Ns.append(Nval) for i in range(reps)]
 Ns = np.array(Ns)
-kRange = np.arange(start = 2, stop = 20, step = 2)
+kRange = [6]
 betaRange = np.logspace(-5.0, 0.0, num = 20, base = 10, endpoint = False)
 phiRange = np.linspace(0.0, 2.0 * np.pi, num = 20, endpoint = False)
 pSpace = itertools.product(Ns, kRange, betaRange, phiRange)
