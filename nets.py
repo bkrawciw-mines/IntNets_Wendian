@@ -84,9 +84,9 @@ def ws(params):
 #General clutering formula
 def __clustHelper(W):
     #These functions only work for dense matrices
-    Wdense = W
-    if sparse.issparse(W):
-        Wdense = W.todense()
+    Wsparse = W
+    if not(sparse.issparse(W)):
+        Wsparse = sparse.csr_matrix(W)
     
     #Record the network size
     N = np.min(W.shape)
@@ -98,11 +98,11 @@ def __clustHelper(W):
             #Record index 
             i = iterator.index
             #Compare paths through node i to shortcuts
-            throughPaths = np.outer(Wdense[:, i], Wdense[i, :])
-            adjShortcuts = np.abs(throughPaths + Wdense) - np.abs(throughPaths)
+            throughPaths = Wsparse[:, i] * Wsparse[i, :]
+            adjShortcuts = np.abs(throughPaths + Wsparse) - np.abs(throughPaths)
             mat = (abs(throughPaths)).multiply(adjShortcuts)
             #Sum all triads on node i
-            norm = np.sum(np.ravel(mat))
+            norm = mat.sum()
             num[i] = norm
     
     #Compute the denominator
@@ -112,11 +112,11 @@ def __clustHelper(W):
             #Record index 
             i = iterator.index
             #Compare paths through node i to path of 1
-            throughPaths = np.outer(Wdense[:, i], Wdense[i, :])
+            throughPaths = Wsparse[:, i] * Wsparse[i, :]
             #adjShortcuts is effectively set to 1 by ignoring it
             mat = np.abs(throughPaths)
             #Sum and record
-            norm = np.sum(np.ravel(mat))
+            norm = mat.sum()
             den[i] = norm
     
     #Meshing vector, scaled and shifted to match unweighted clustering
