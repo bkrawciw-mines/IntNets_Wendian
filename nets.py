@@ -66,7 +66,8 @@ def rewire(A, beta):
 #Returns the adjacency matrix of a small-world network with the given parameters
 def ws(params):
     #Unpack parameters
-    N, khalf, beta, phi = params[0], params[1], params[2], params[3]
+    N, khalf, beta, phi, weighting = (params[0], params[1], params[2], 
+                                      params[3], params[4])
     
     #Generate ring
     ring = makeRing(N, khalf)
@@ -75,7 +76,7 @@ def ws(params):
     rewired = rewire(ring, beta)
     
     #Add phase
-    w = ((0.25 /  khalf)) * np.exp(1.0j * phi)
+    w = (weighting * (1.0 /  khalf)) * np.exp(1.0j * phi)
     W = rewired.astype(complex) * w 
     
     #Return adjacency matrix as a sparse matrix
