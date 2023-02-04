@@ -103,7 +103,7 @@ def __clustHelper(W):
             mat = (abs(throughPaths)).multiply(adjShortcuts)
             #Sum all triads on node i
             norm = mat.sum()
-            num[i] = norm
+            entry[...] = norm
     
     #Compute the denominator
     den = np.zeros(N)
@@ -117,7 +117,7 @@ def __clustHelper(W):
             mat = np.abs(throughPaths)
             #Sum and record
             norm = mat.sum()
-            den[i] = norm
+            entry[...] = norm
     
     #Meshing vector, scaled and shifted to match unweighted clustering
     Mvec = np.divide(num, den, out=np.zeros_like(num), where = den != 0.0)
@@ -133,7 +133,7 @@ def Mesh(W):
     return __clustHelper(W)
 
 #Returns the real-valued strongest path strength
-def SPS(W):
+def SPL(W):
     #Convert multiplicative path lengths to additive ones by taking a logarithm
     Wlog = sparse.csr_matrix((-np.log(np.abs(W.data)), 
                               W.indices, 
@@ -147,13 +147,12 @@ def SPS(W):
     
     #Use Dijkstra's algorithm to solve for shortest paths in log space
     logShorts = sparse.csgraph.shortest_path(csgraph = Wlog)
-    strongs = np.exp(-logShorts)
     #Return the average
-    SPS = np.mean(np.abs(strongs), (0, 1))
-    return(SPS)
+    SPL = np.mean(logShorts, (0, 1))
+    return(SPL)
 
 #Returns the magnitude of the apparent path strength
-def APS(W):
+def APL(W):
     #This measure comes from treating the network as an interferometer
     #This involves solving for the node-signal-value vector E
     #A constant-source-to-node vector S is also supplied
@@ -170,8 +169,8 @@ def APS(W):
     #Compute matrix inverse
     P = sp.inv(np.nan_to_num(WI.todense()))
     #print(P @ WI)
-    APS = np.mean(np.abs(P), (0, 1))
-    return(APS)
+    APL = np.mean(-np.log(np.abs(P)), (0, 1))
+    return(APL)
 
 '''
 #Testing the functions
@@ -186,8 +185,8 @@ Cr = Creal(W)
 print(Cr)
 M = Mesh(W)
 print(M)
-ap = APS(W)
+ap = APL(W)
 #print(ap)
-sps = SPS(W)
+sps = SPL(W)
 #print(sps)
 '''
