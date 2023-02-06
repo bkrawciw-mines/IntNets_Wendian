@@ -14,11 +14,13 @@ import matplotlib.pyplot as plt
 #Reading in the CSV data
 inFileName = 'thick500.csv'
 dataFrame = pd.read_csv(inFileName, delimiter = ',')
-print(dataFrame)
+#Treat infinite values as invalid
+dataFrame.replace([np.inf, -np.inf], np.nan, inplace = True)
 
 #Group trials by input parameters, then compute means
-sortNets = dataFrame.groupby(['N', 'kHalf', 'beta', 'phi'], as_index = False)
-measures = sortNets.mean()
+sortNets = dataFrame.groupby(['N', 'kHalf', 'beta', 'phi', 'weighting'], 
+                             as_index = False)
+measures = sortNets.max()
 
 #Case study: How do N and kHalf change things?
 #Select a particular beta and phi value
@@ -164,8 +166,31 @@ Svals = pd.DataFrame(Svals.values,
 #Find maximum over beta for each phi
 Smax = Svals.groupby('phi', as_index = False).max()
 
+#Characterize S over beta
+SmaxBeta = Svals.groupby(['N', 'kHalf', 'phi'], as_index = False).max()
+
 #Plot S over beta for a few interesting places
 plt.figure()
-plt.scatter(Smax['phi'].to_numpy(), Smax['Scomp'].to_numpy())
+#Identify all unique phi values
+phis = Svals['phi'].unique()
+for i in range(5):
+    index = i * (len(phis)) // 5
+    phi = phis[index]
+    pDat = Svals.loc[Svals['phi'] == phi]
+    betax = np.log(pDat['beta'].to_numpy())
+    plt.scatter(betax, pDat['Scomp'], label = (r"$\phi$ = %0.2f" %phi))
+plt.legend()
+plt.xlabel(r"log $\beta$")
+plt.ylabel(r'$S_{{complex}}$')
+plt.title(r'''Small-World Effect over $\beta$,
+N = 500, k = 12''')
 
 #Plot Smax over phi
+plt.figure()
+plt.scatter(SmaxBeta['phi'], SmaxBeta['Scomp'], label = r'$S_{complex}$')
+plt.scatter(SmaxBeta['phi'], SmaxBeta['Sreal'], label = r'$S_{real}$')
+plt.xlabel(r'$\phi$')
+plt.ylabel('S')
+plt.title(r'''The Change in Peak S over $\phi$,
+N = 500, k=12''')
+plt.legend()
