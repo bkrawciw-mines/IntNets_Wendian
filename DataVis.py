@@ -184,6 +184,7 @@ plt.xlabel(r"log $\beta$")
 plt.ylabel(r'$S_{{complex}}$')
 plt.title(r'''Small-World Effect over $\beta$,
 N = 500, k = 12''')
+#plt.savefig("sw_overbeta.pdf")
 
 #Plot Smax over phi
 plt.figure()
@@ -194,3 +195,4 @@ plt.ylabel('S')
 plt.title(r'''The Change in Peak S over $\phi$,
 N = 500, k=12''')
 plt.legend()
+#plt.savefig("sw_overphi.pdf")
