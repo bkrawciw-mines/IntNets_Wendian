@@ -26,15 +26,19 @@ outFileName = 'thick500.csv'
 #Create the parameter space for testing
 Nrange = [500]
 #Small networks need more trials
-redundancy = 50
+redundancy = 100
 Ns = []
 for Nval in Nrange:
     reps = redundancy * ((Nrange[-1]) // (Nval))
     [Ns.append(Nval) for i in range(reps)]
 Ns = np.array(Ns)
 kRange = [6]
-betaRange = np.logspace(-5.0, 0.0, num = 20, base = 10, endpoint = True)
-phiRange = np.linspace(0.0, 2.0 * np.pi, num = 20, endpoint = False)
+#Create a beta space with grid points concentrated around 10e-2
+betaRange = 10.0**((2.0 * 
+                    (np.linspace(-1.0, 1.0, num = 50, endpoint = True)**3.0))
+                   - 2.0)
+#Create a phi space with grid points concentrated around zero
+phiRange = np.pi * (np.linspace(-1.0, 1.0, num = 50, endpoint = False)**3.0)
 weighting = [0.95]
 pSpace = itertools.product(Ns, kRange, betaRange, phiRange, weighting)
 
@@ -55,7 +59,10 @@ def Stest(params):
 if __name__ == '__main__':
     tStart = time()
     with MPIPoolExecutor() as executor:
-        results = executor.map(Stest, pSpace)
+        results = executor.map(Stest, pSpace, 
+                               timeout = 1.0,
+                               chunksize = 10,
+                               unordered = True)
     
         #Creating the file to log data
         with open(outFileName, 'w', newline= '' ) as csvFile:

@@ -121,7 +121,7 @@ def __clustHelper(W):
             entry[...] = norm
     
     #Meshing vector, scaled and shifted to match unweighted clustering
-    Mvec = np.divide(num, den, out=np.zeros_like(num), where = den != 0.0)
+    Mvec = np.divide(num, den + TOL, out=np.zeros_like(num), where = den != 0.0)
     avg = np.mean(Mvec)
     return avg
     

@@ -11,11 +11,11 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-#Numerical tolerance
-TOL = 10e-4
+#Numerical tolerance to avoid dividing by zero
+TOL = 10e-8
 
 #Reading in the CSV data
-inFileName = 'thick500.csv'
+inFileName = 'randParams.csv'
 dataFrame = pd.read_csv(inFileName, delimiter = ',')
 #Treat infinite values as invalid
 dataFrame.replace([np.inf, -np.inf], np.nan, inplace = True)
@@ -25,83 +25,8 @@ sortNets = dataFrame.groupby(['N', 'kHalf', 'beta', 'phi', 'weighting'],
                              as_index = False)
 measures = sortNets.max()
 
-#Case study: How do N and kHalf change things?
-#Select a particular beta and phi value
-NkData = measures.loc[(measures['beta'] == measures['beta'][1]) 
-                       & (measures['phi'] == 0)]
-
-NkN, Nkk = NkData['N'].to_numpy(), NkData['kHalf'].to_numpy()
-NkM, NkSPL = NkData['M'].to_numpy(), NkData['SPL'].to_numpy()
-NkAPL = NkData['APL'].to_numpy()
-
-fig, ax = plt.subplots()
-scat = ax.scatter(NkN, Nkk, c = NkM, s = 100)
-ax.set(
-        title = "Clustering over kHalf and N",
-        xlabel = 'N',
-        ylabel = 'kHalf'
-        )
-fig.colorbar(scat, label = 'Clustering')
-fig.show()
-
-fig, ax = plt.subplots()
-scat = ax.scatter(NkN, Nkk, c = NkSPL, s = 100)
-ax.set(
-        title = "SPL over kHalf and N",
-        xlabel = 'N',
-        ylabel = 'kHalf'
-        )
-fig.colorbar(scat, label = 'SPL')
-fig.show()
-
-fig, ax = plt.subplots()
-scat = ax.scatter(NkN, Nkk, c = NkAPL, s = 100)
-ax.set(
-        title = "APL over kHalf and N",
-        xlabel = 'N',
-        ylabel = 'kHalf'
-        )
-fig.colorbar(scat, label = 'SPL')
-fig.show()
-
-
-#Case study: How do beta and phi change things?
-bpData = measures.loc[(measures['N'] == max(measures['N'])) & (measures['kHalf'] == 6)]
-bpb, bpp = bpData['beta'].to_numpy(), bpData['phi'].to_numpy()
-bpM, bpSPL = bpData['M'].to_numpy(), bpData['SPL'].to_numpy()
-bpAPL = bpData['APL'].to_numpy()
-fig, ax = plt.subplots()
-scat = ax.scatter(np.log(bpb), bpp, c = bpM, s = 100)
-ax.set(
-        title = "Clustering over beta and phi",
-        xlabel = 'log(beta)',
-        ylabel = 'phi'
-        )
-fig.colorbar(scat, label = 'Clustering')
-fig.show()
-
-fig, ax = plt.subplots()
-scat = ax.scatter(np.log(bpb), bpp, c = bpSPL, s = 100)
-ax.set(
-        title = "SPL over beta and phi",
-        xlabel = 'log(beta)',
-        ylabel = 'phi'
-        )
-fig.colorbar(scat, label = 'SPL')
-fig.show()
-
-fig, ax = plt.subplots()
-scat = ax.scatter(np.log(bpb), bpp, c = bpAPL, s = 100)
-ax.set(
-        title = "APL over beta and phi",
-        xlabel = 'log(beta)',
-        ylabel = 'phi'
-        )
-fig.colorbar(scat, label = 'APL')
-
 #Recreating previous results
-SmaxDat = measures.loc[(measures['N'] == max(measures['N'])) 
-                      & (measures['kHalf'] == 6)]
+SmaxDat = measures
 M = SmaxDat['M']
 SPL = SmaxDat['SPL']
 APL = SmaxDat['APL']
@@ -172,12 +97,12 @@ Smax = Svals.groupby('phi', as_index = False).max()
 #Characterize S over beta
 SmaxBeta = Svals.groupby(['N', 'kHalf', 'phi'], as_index = False).max()
 
-#Plot S over beta for a few interesting places
+#Plot S over beta for a couple interesting places
 plt.figure()
 #Identify all unique phi values
 phis = Svals['phi'].unique()
-for i in range(5):
-    index = i * (len(phis)) // 5
+for i in range(2):
+    index = i * (len(phis)) // 2
     phi = phis[index]
     pDat = Svals.loc[Svals['phi'] == phi]
     betax = np.log(pDat['beta'].to_numpy())
@@ -187,7 +112,7 @@ plt.xlabel(r"log $\beta$")
 plt.ylabel(r'$S_{{complex}}$')
 plt.title(r'''Small-World Effect over $\beta$,
 N = 500, k = 12''')
-plt.savefig("sw_overbeta.pdf")
+#plt.savefig("sw_overbeta.pdf")
 
 #Plot Smax over phi
 plt.figure()
@@ -198,4 +123,47 @@ plt.ylabel('S')
 plt.title(r'''The Change in Peak S over $\phi$,
 N = 500, k=12''')
 plt.legend()
-plt.savefig("sw_overphi.pdf")
+#plt.savefig("sw_overphi.pdf")
+
+#Compute S ratios
+def Sratios(Smax):
+    #Find the phi = 0 and phi = pi entries
+    phi_0 = Smax.loc[(Smax['phi'] == 0.0)]
+    phi_pi = Smax.loc[(Smax['phi'] == np.pi)]
+    
+    #Compute the ratios
+    Smaxes = (phi_0['Scomp']).to_numpy()
+    Smins = (phi_pi['Scomp']).to_numpy()
+    logratios = (np.log(Smaxes / Smins) / np.log(10.0))
+    
+    #Collect other important pieces of data
+    Ns = phi_0['N'].to_numpy()
+    ks = 2 * phi_0['kHalf'].to_numpy()
+    data = np.array([Ns, ks, logratios])
+    
+    #Create and return the final dataframe
+    out = pd.DataFrame(data.T, columns = ['N', 'k', 'Sratio'])
+    return(out)
+
+Srats = Sratios(SmaxBeta)
+
+#Create histogram of S ratios
+plt.figure()
+Srats['Sratio'].plot.hist()
+plt.xlabel(r"$\log_{10} \left( \frac{S(\phi = 0)}{S(\phi = \pi)} \right)$",
+           fontdict = {'fontsize': 16})
+plt.title('''Testing Small-World Dissipation for 
+Randomized N and k''')
+plt.xlim(0.0, 3.0)
+plt.savefig('RandomizedHistogram.pdf', bbox_inches = 'tight')
+
+#Plot the N, K pairs tested
+fig, ax = plt.subplots()
+scat = ax.scatter((Srats['N'].to_numpy()),
+                  (Srats['k'].to_numpy()),
+                  c = (Srats['Sratio']).to_numpy())
+fig.colorbar(scat, label = 'log of S ratio')
+ax.set(xlabel = 'N',
+       ylabel = 'k',
+       title = 'Networks tested for Small-World Dissipation')
+fig.savefig('RandParams.pdf', bbox_inches = 'tight')
