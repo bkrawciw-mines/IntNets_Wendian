@@ -74,6 +74,7 @@ if __name__ == '__main__':
             writer.writerow(['N', 'kHalf', 'beta', 'phi', 'weighting', 'C', 'M', 'SPL', 'APL'])
             writer.writerows(betaResults)
         
+        '''
         #Running Stest on the parameters in phiParams
         phiResults = executor.map(IntTests.Stest, phiParams)
         
@@ -82,7 +83,8 @@ if __name__ == '__main__':
             writer = csv.writer(csvFile)
             writer.writerow(['N', 'kHalf', 'beta', 'phi', 'weighting', 'C', 'M', 'SPL', 'APL'])
             writer.writerows(betaResults)
-            
+        '''
+        
         executor.shutdown(wait = False)
   
     #Report the execution time
