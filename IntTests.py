@@ -18,12 +18,12 @@ from mpi4py.futures import MPIPoolExecutor
 from time import time
 
 #Name for the output file
-outFileName = 'thick500.csv'
+outFileName = 'full500.csv'
 
 #Create the parameter space for testing
 Nrange = [500]
 #Redundancy for tighter statistics
-redundancy = 1
+redundancy = 100
 Ns = []
 #Small networks need more trials
 for Nval in Nrange:
@@ -32,16 +32,16 @@ for Nval in Nrange:
 Ns = np.array(Ns)
 kRange = [6]
 #Create a beta space
-betaRange = np.logspace(-5.0, 0.0, num = 10, base = 10, endpoint = True)
+betaRange = np.logspace(-5.0, 0.0, num = 100, base = 10, endpoint = True)
 #Create a phi space
-phiRange = np.linspace(0.0, 2.0 * np.pi, num = 10, endpoint = False)
+phiRange = np.linspace(0.0, 2.0 * np.pi, num = 100, endpoint = False)
 weighting = [0.95]
 #Total parameter space for tests
 pSpace = itertools.product(Ns, kRange, betaRange, phiRange, weighting)
 
 #Function for each independent test
 def Stest(params):
-    print('sTest', params)
+    #print('sTest', params)
     #Create a WS interferometer 
     W = nets.ws(params)
     
@@ -60,13 +60,7 @@ if __name__ == '__main__':
     #Run an MPI executor on the available nodes
     with MPIPoolExecutor() as executor:
         #Use the executor to run the Stest process on parameters in pSpace
-        results = executor.map(Stest, pSpace, 
-                               #Limit executions to __ seconds
-                               timeout = 10.0,
-                               #Send tasks this many tasks at a time 
-                               chunksize = 10,
-                               #I don't care about the order tests run in
-                               unordered = True)
+        results = executor.map(Stest, pSpace)
     
         #Creating the file to log data
         with open(outFileName, 'w', newline= '' ) as csvFile:
@@ -74,6 +68,8 @@ if __name__ == '__main__':
             writer.writerow(['N', 'kHalf', 'beta', 'phi', 'weighting', 'C', 'M', 'SPL', 'APL'])
             writer.writerows(results)
     
+        executor.shutdown(wait = False)
+  
     #Report the execution time
     print("Tests completed. Time: %f s" % (time() - tStart))
     

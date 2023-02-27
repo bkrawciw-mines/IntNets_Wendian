@@ -12,10 +12,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 #Numerical tolerance
-TOL = 10e-4
+TOL = 1e-8
 
 #Reading in the CSV data
-inFileName = 'thick500.csv'
+inFileName = 'full500.csv'
 dataFrame = pd.read_csv(inFileName, delimiter = ',')
 #Treat infinite values as invalid
 dataFrame.replace([np.inf, -np.inf], np.nan, inplace = True)
@@ -66,7 +66,8 @@ fig.show()
 
 
 #Case study: How do beta and phi change things?
-bpData = measures.loc[(measures['N'] == max(measures['N'])) & (measures['kHalf'] == 6)]
+bpData = measures.loc[(measures['N'] == max(measures['N'])) 
+                      & (measures['kHalf'] == 6)]
 bpb, bpp = bpData['beta'].to_numpy(), bpData['phi'].to_numpy()
 bpM, bpSPL = bpData['M'].to_numpy(), bpData['SPL'].to_numpy()
 bpAPL = bpData['APL'].to_numpy()
@@ -176,8 +177,8 @@ SmaxBeta = Svals.groupby(['N', 'kHalf', 'phi'], as_index = False).max()
 plt.figure()
 #Identify all unique phi values
 phis = Svals['phi'].unique()
-for i in range(5):
-    index = i * (len(phis)) // 5
+for i in [-2, -1, 0, 1, 2]:
+    index = i
     phi = phis[index]
     pDat = Svals.loc[Svals['phi'] == phi]
     betax = np.log(pDat['beta'].to_numpy())
@@ -186,8 +187,8 @@ plt.legend()
 plt.xlabel(r"log $\beta$")
 plt.ylabel(r'$S_{{complex}}$')
 plt.title(r'''Small-World Effect over $\beta$,
-N = 500, k = 12''')
-plt.savefig("sw_overbeta.pdf")
+N = 500, k = 6''')
+#plt.savefig("sw_overbeta.pdf")
 
 #Plot Smax over phi
 plt.figure()
@@ -196,6 +197,6 @@ plt.scatter(SmaxBeta['phi'], SmaxBeta['Sreal'], label = r'$S_{real}$')
 plt.xlabel(r'$\phi$')
 plt.ylabel('S')
 plt.title(r'''The Change in Peak S over $\phi$,
-N = 500, k=12''')
+N = 500, k=6''')
 plt.legend()
-plt.savefig("sw_overphi.pdf")
+#plt.savefig("sw_overphi.pdf")

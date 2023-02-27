@@ -14,9 +14,10 @@ import numpy as np
 import numpy.ma as ma
 import scipy.linalg as sp
 import scipy.sparse as sparse
+from time import time
 
 #Create a random number generator
-rng = np.random.default_rng(0)
+rng = np.random.default_rng(int(time()))
 
 #Tolerance for numerical things
 TOL = 1e-8
@@ -149,7 +150,7 @@ def SPL(W):
     #Use Dijkstra's algorithm to solve for shortest paths in log space
     logShorts = sparse.csgraph.shortest_path(csgraph = Wlog)
     #Return the average
-    SPL = np.mean(logShorts, (0, 1))
+    SPL = np.mean(logShorts, (0, 1), where = (np.abs(logShorts) != np.inf))
     return(SPL)
 
 #Returns the magnitude of the apparent path strength
@@ -170,7 +171,7 @@ def APL(W):
     #Compute matrix inverse
     P = sp.inv(np.nan_to_num(WI.todense()))
     #print(P @ WI)
-    APL = np.mean(-np.log(np.abs(P)), (0, 1))
+    APL = np.mean(-np.log(np.abs(P) + TOL), (0, 1))
     return(APL)
 
 '''

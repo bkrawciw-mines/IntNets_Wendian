@@ -12,8 +12,8 @@ allowing accumulation of data over several runs.
 
 #Library imports
 import csv
-from mpi4py.futures import MPIPoolExecutor
 from time import time
+from mpi4py.futures import MPIPoolExecutor
 
 #Base output on parent program IntTests.py
 import IntTests
@@ -25,18 +25,13 @@ if __name__ == '__main__':
     #Run an MPI executor on the available nodes
     with MPIPoolExecutor() as executor:
         #Use the executor to run the Stest process on parameters in pSpace
-        results = executor.map(IntTests.Stest, IntTests.pSpace, 
-                               #Limit executions to __ seconds
-                               timeout = 10.0,
-                               #Send tasks this many tasks at a time 
-                               chunksize = 10,
-                               #I don't care about the order tests run in
-                               unordered = True)
-    
+        results = executor.map(IntTests.Stest, IntTests.pSpace)
         #Open the file to log data
         with open(IntTests.outFileName, 'a', newline= '' ) as csvFile:
             writer = csv.writer(csvFile)
             writer.writerows(results)
+        
+        executor.shutdown(wait = False)
     
     #Report program execution time
     print("Tests completed. Time: %f s" % (time() - tStart))
