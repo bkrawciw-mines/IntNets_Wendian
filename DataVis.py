@@ -17,6 +17,13 @@ TOL = 1e-8
 #Reading in the CSV data
 inFileName = 'full500.csv'
 dataFrame = pd.read_csv(inFileName, delimiter = ',')
+#Including data patches
+betaPatch = 'betaPatch_redundancy.csv'
+betaPatchFrame = pd.read_csv(betaPatch, delimiter = ',')
+dataFrame = pd.concat((dataFrame, betaPatchFrame))
+
+    
+
 #Treat infinite values as invalid
 dataFrame.replace([np.inf, -np.inf], np.nan, inplace = True)
 
