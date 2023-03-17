@@ -21,9 +21,9 @@ dataFrame = pd.read_csv(inFileName, delimiter = ',')
 betaPatch = 'betaPatch_redundancy.csv'
 betaPatchFrame = pd.read_csv(betaPatch, delimiter = ',')
 dataFrame = pd.concat((dataFrame, betaPatchFrame))
-
-    
-
+phiPatch = 'phiPatch.csv'
+phiPatchFrame = pd.read_csv(phiPatch, delimiter = ',')
+dataFrame = pd.concat((dataFrame, phiPatchFrame))
 #Treat infinite values as invalid
 dataFrame.replace([np.inf, -np.inf], np.nan, inplace = True)
 
@@ -192,14 +192,14 @@ for i in [-2, -1, 0, 1, 2]:
     plt.scatter(betax, pDat['Scomp'], label = (r"$\phi$ = %0.2f" %phi))
 plt.legend()
 plt.xlabel(r"log $\beta$")
-plt.ylabel(r'$S_{{complex}}$')
+plt.ylabel(r'$S_{{int}}$')
 plt.title(r'''Small-World Effect over $\beta$,
 N = 500, k = 6''')
 plt.savefig("sw_overbeta.pdf")
 
 #Plot Smax over phi
 plt.figure()
-plt.scatter(SmaxBeta['phi'], SmaxBeta['Scomp'], label = r'$S_{complex}$')
+plt.scatter(SmaxBeta['phi'], SmaxBeta['Scomp'], label = r'$S_{int}$')
 plt.scatter(SmaxBeta['phi'], SmaxBeta['Sreal'], label = r'$S_{real}$')
 plt.xlabel(r'$\phi$')
 plt.ylabel('S')
