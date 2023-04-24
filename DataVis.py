@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Mon Oct  3 07:25:11 2022
+Data Visualization
+Benjamin Krawciw
+10/3/2022
 
-@author: kachow
+This program plots the results for the small-world interferometer tests
 """
 
 #Library imports
@@ -17,7 +19,7 @@ TOL = 1e-8
 #Reading in the CSV data
 inFileName = 'full500.csv'
 dataFrame = pd.read_csv(inFileName, delimiter = ',')
-#Including data patches
+#Including data patches (supplemental data in sensitive areas)
 betaPatch = 'betaPatch_redundancy.csv'
 betaPatchFrame = pd.read_csv(betaPatch, delimiter = ',')
 dataFrame = pd.concat((dataFrame, betaPatchFrame))
@@ -193,8 +195,6 @@ for i in [-2, -1, 0, 1, 2]:
 plt.legend()
 plt.xlabel(r"log $\beta$")
 plt.ylabel(r'$S_{{int}}$')
-plt.title(r'''Small-World Effect over $\beta$,
-N = 500, k = 6''')
 plt.savefig("sw_overbeta.pdf")
 
 #Plot Smax over phi
@@ -203,7 +203,5 @@ plt.scatter(SmaxBeta['phi'], SmaxBeta['Scomp'], label = r'$S_{int}$')
 plt.scatter(SmaxBeta['phi'], SmaxBeta['Sreal'], label = r'$S_{real}$')
 plt.xlabel(r'$\phi$')
 plt.ylabel('S')
-plt.title(r'''The Change in Peak S over $\phi$,
-N = 500, k=6''')
 plt.legend()
 plt.savefig("sw_overphi.pdf")

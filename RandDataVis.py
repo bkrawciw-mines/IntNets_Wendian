@@ -152,8 +152,6 @@ plt.figure()
 Srats['Sratio'].plot.hist()
 plt.xlabel(r"$\log_{10} \left( \frac{S(\phi = 0)}{S(\phi = \pi)} \right)$",
            fontdict = {'fontsize': 16})
-plt.title('''Testing Small-World Dissipation for 
-Randomized N and k''')
 plt.xlim(0.0, 3.0)
 plt.savefig('RandomizedHistogram.pdf', bbox_inches = 'tight')
 
@@ -164,6 +162,7 @@ scat = ax.scatter((Srats['N'].to_numpy()),
                   c = (Srats['Sratio']).to_numpy())
 fig.colorbar(scat, label = 'log of S ratio')
 ax.set(xlabel = 'N',
-       ylabel = 'k',
-       title = 'Networks tested for Small-World Dissipation')
+       ylabel = 'k'
+       #title = 'Networks tested for Small-World Dissipation')
+       )
 fig.savefig('RandParams.pdf', bbox_inches = 'tight')

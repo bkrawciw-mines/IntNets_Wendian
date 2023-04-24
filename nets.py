@@ -115,8 +115,9 @@ def __clustHelper(W):
             i = iterator.index
             #Compare paths through node i to path of 1
             throughPaths = Wsparse[:, i] * Wsparse[i, :]
-            #adjShortcuts is effectively set to 1 by ignoring it
-            mat = np.abs(throughPaths)
+            adjShortcuts = np.ones(N)
+            adjShortcuts[i] = 0 #Do not anticipate self-loops
+            mat = (abs(throughPaths)).multiply(adjShortcuts)
             #Sum and record
             norm = mat.sum()
             entry[...] = norm
@@ -180,7 +181,7 @@ ring = makeRing(100, 18)
 #print(ring)
 rewired = rewire(ring, 0.1)
 #print(rewired)
-W = ws([100, 8, 1.0, np.pi / 4])
+W = ws([100, 8, 1.0, np.pi / 4, 0.95])
 #print(W.diagonal())
 #print(W)
 Cr = Creal(W)
