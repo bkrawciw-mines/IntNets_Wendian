@@ -12,31 +12,39 @@ This program plots the results for the small-world interferometer tests
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from scipy import stats #For filtering outliers
 
 #Numerical tolerance
 TOL = 1e-8
 
 #Reading in the CSV data
-inFileName = 'full500.csv'
+inFileName = 'full500_loops.csv'
 dataFrame = pd.read_csv(inFileName, delimiter = ',')
 #Including data patches (supplemental data in sensitive areas)
-betaPatch = 'betaPatch_redundancy.csv'
+betaPatch = 'betaPatch_redundancy_loops.csv'
 betaPatchFrame = pd.read_csv(betaPatch, delimiter = ',')
 dataFrame = pd.concat((dataFrame, betaPatchFrame))
-phiPatch = 'phiPatch.csv'
+phiPatch = 'phiPatch_loops.csv'
 phiPatchFrame = pd.read_csv(phiPatch, delimiter = ',')
 dataFrame = pd.concat((dataFrame, phiPatchFrame))
 #Treat infinite values as invalid
 dataFrame.replace([np.inf, -np.inf], np.nan, inplace = True)
+#Find outliers in APL and M
+MzScore = np.abs(stats.zscore(dataFrame['M']))
+APLzScore = np.abs(stats.zscore(dataFrame['APL'], nan_policy='omit'))
+dataFrame = dataFrame.loc[(APLzScore < 3) & (MzScore < 3)]
 
 #Group trials by input parameters, then compute means
 sortNets = dataFrame.groupby(['N', 'kHalf', 'beta', 'phi', 'weighting'], 
                              as_index = False)
-measures = sortNets.max()
+#Using a more stable version of the average to handle volatility in APL
+measures = sortNets.mean()
+measuresErrs = sortNets.std()
+numTests = sortNets.count()
 
 #Case study: How do N and kHalf change things?
 #Select a particular beta and phi value
-NkData = measures.loc[(measures['beta'] == measures['beta'][1]) 
+NkData = measures.loc[(measures['beta'] == max(measures['beta']))
                        & (measures['phi'] == 0)]
 
 NkN, Nkk = NkData['N'].to_numpy(), NkData['kHalf'].to_numpy()
@@ -112,6 +120,10 @@ fig.colorbar(scat, label = 'APL')
 #Recreating previous results
 SmaxDat = measures.loc[(measures['N'] == max(measures['N'])) 
                       & (measures['kHalf'] == 6)]
+SmaxErrs = measuresErrs.loc[(measuresErrs['N'] == max(measures['N'])) 
+                      & (measuresErrs['kHalf'] == 6)]
+SmaxCounts = numTests.loc[(measuresErrs['N'] == max(measures['N'])) 
+                      & (measuresErrs['kHalf'] == 6)]
 M = SmaxDat['M']
 SPL = SmaxDat['SPL']
 APL = SmaxDat['APL']
@@ -181,6 +193,7 @@ Smax = Svals.groupby('phi', as_index = False).max()
 
 #Characterize S over beta
 SmaxBeta = Svals.groupby(['N', 'kHalf', 'phi'], as_index = False).max()
+SmaxBetaErr = Svals.groupby(['N', 'kHalf', 'phi'], as_index = False).std()
 
 #Plot S over beta for a few interesting places
 plt.figure()
@@ -190,18 +203,40 @@ for i in [-2, -1, 0, 1, 2]:
     index = i
     phi = phis[index]
     pDat = Svals.loc[Svals['phi'] == phi]
+    #Estimate swcoeff error as the product of relative C and P errors times S.
+    Mdat = M.loc[Svals['phi'] == phi]
+    Pdat = APL.loc[Svals['phi'] == phi]
+    Cerr = (SmaxErrs.loc[SmaxErrs['phi'] == phi])['M'] / Mdat
+    Perr = (SmaxErrs.loc[SmaxErrs['phi'] == phi])['APL'] / Pdat
+    pDatErr = pDat['Scomp'] * np.sqrt(Cerr**2 + Perr**2)
+    #Divide by sqrt(numTests) to get standard dev of the mean
+    nTests = min(SmaxCounts.loc[SmaxCounts['phi']==phi]['M'])
+    pDatErr = pDatErr / np.sqrt(nTests)
     betax = np.log(pDat['beta'].to_numpy())
-    plt.scatter(betax, pDat['Scomp'], label = (r"$\phi$ = %0.2f" %phi))
+    plt.errorbar(betax, pDat['Scomp'], pDatErr, label = (r"$\phi$ = %0.2f" %phi),
+                 elinewidth=1,
+                 capsize=5,
+                 marker='.', 
+                 lw = 0)
 plt.legend()
 plt.xlabel(r"log $\beta$")
 plt.ylabel(r'$S_{{int}}$')
-plt.savefig("sw_overbeta.pdf")
+plt.ylim(0, 300)
+plt.savefig("sw_overbeta_loops.pdf")
 
 #Plot Smax over phi
 plt.figure()
-plt.scatter(SmaxBeta['phi'], SmaxBeta['Scomp'], label = r'$S_{int}$')
-plt.scatter(SmaxBeta['phi'], SmaxBeta['Sreal'], label = r'$S_{real}$')
+plt.errorbar(SmaxBeta['phi'], SmaxBeta['Scomp'], SmaxBetaErr['Scomp'], label = r'$S_{int}$',
+             elinewidth=1,
+             capsize=5,
+             marker='.', 
+             lw = 0)
+plt.errorbar(SmaxBeta['phi'], SmaxBeta['Sreal'], 0, label = r'$S_{real}$',
+             elinewidth=1,
+             capsize=5,
+             marker='.', 
+             lw = 0)
 plt.xlabel(r'$\phi$')
 plt.ylabel('S')
 plt.legend()
-plt.savefig("sw_overphi.pdf")
+plt.savefig("sw_overphi_loops.pdf")
