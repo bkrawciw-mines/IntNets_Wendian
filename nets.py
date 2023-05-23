@@ -171,11 +171,13 @@ def APL(W):
     
     #Compute matrix inverse
     P = sp.inv(np.nan_to_num(WI.todense()))
-    #print(P @ WI)
-    APL = np.mean(-np.log(np.abs(P) + TOL), (0, 1))
+    #The matrix inverse has limited precision. Ignore anything too small.
+    Pmasked = ma.masked_less(abs(P), TOL)
+    #Convert to path lengths with a logarithm
+    APL = (-np.log(Pmasked, where = np.greater(abs(P), TOL))).mean()
     return(APL)
 
-'''
+
 #Testing the functions
 ring = makeRing(100, 18)
 #print(ring)
@@ -183,13 +185,12 @@ rewired = rewire(ring, 0.1)
 #print(rewired)
 W = ws([100, 8, 1.0, np.pi / 4, 0.95])
 #print(W.diagonal())
-#print(W)
+print(W.todense())
 Cr = Creal(W)
 print(Cr)
 M = Mesh(W)
 print(M)
 ap = APL(W)
-#print(ap)
+print(ap)
 sps = SPL(W)
-#print(sps)
-'''
+print(sps)

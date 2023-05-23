@@ -18,15 +18,15 @@ from scipy import stats #For filtering outliers
 TOL = 1e-8
 
 #Reading in the CSV data
-inFileName = 'full500_loops.csv'
+inFileName = 'full500.csv'
 dataFrame = pd.read_csv(inFileName, delimiter = ',')
 #Including data patches (supplemental data in sensitive areas)
-betaPatch = 'betaPatch_redundancy_loops.csv'
+betaPatch = 'betaPatch_redundancy.csv'
 betaPatchFrame = pd.read_csv(betaPatch, delimiter = ',')
-dataFrame = pd.concat((dataFrame, betaPatchFrame))
-phiPatch = 'phiPatch_loops.csv'
+#dataFrame = pd.concat((dataFrame, betaPatchFrame))
+phiPatch = 'phiPatch.csv'
 phiPatchFrame = pd.read_csv(phiPatch, delimiter = ',')
-dataFrame = pd.concat((dataFrame, phiPatchFrame))
+#dataFrame = pd.concat((dataFrame, phiPatchFrame))
 #Treat infinite values as invalid
 dataFrame.replace([np.inf, -np.inf], np.nan, inplace = True)
 #Find outliers in APL and M
@@ -41,6 +41,7 @@ sortNets = dataFrame.groupby(['N', 'kHalf', 'beta', 'phi', 'weighting'],
 measures = sortNets.mean()
 measuresErrs = sortNets.std()
 numTests = sortNets.count()
+print(measures)
 
 #Case study: How do N and kHalf change things?
 #Select a particular beta and phi value
@@ -218,11 +219,11 @@ for i in [-2, -1, 0, 1, 2]:
                  capsize=5,
                  marker='.', 
                  lw = 0)
-plt.legend()
+plt.legend(loc = 'lower left')
 plt.xlabel(r"log $\beta$")
 plt.ylabel(r'$S_{{int}}$')
-plt.ylim(0, 300)
-plt.savefig("sw_overbeta_loops.pdf")
+#plt.ylim(0, 300)
+plt.savefig("sw_overbeta100.pdf")
 
 #Plot Smax over phi
 plt.figure()
@@ -239,4 +240,4 @@ plt.errorbar(SmaxBeta['phi'], SmaxBeta['Sreal'], 0, label = r'$S_{real}$',
 plt.xlabel(r'$\phi$')
 plt.ylabel('S')
 plt.legend()
-plt.savefig("sw_overphi_loops.pdf")
+plt.savefig("sw_overphi100.pdf")

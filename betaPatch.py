@@ -20,7 +20,7 @@ from mpi4py.futures import MPIPoolExecutor
 import IntTests
 
 #Naming output file
-bpName = 'betaPatch_redundancy.csv'
+bpName = 'betaPatch_redundancy2.csv'
 
 #Identifying existing gridpoints in critical areas
 betaMinIndex = np.argmin(np.abs(IntTests.betaRange - np.exp(-5.0)))
@@ -38,7 +38,7 @@ phiRough = np.concatenate((phiRoughLow, phiRoughHigh))
 
 #Increasing redundancy
 #Redundancy for tighter statistics
-redundancy = 1000
+redundancy = 4000
 Ns = []
 #Small networks need more trials
 for Nval in IntTests.Nrange:

@@ -35,7 +35,7 @@ kRange = [6]
 betaRange = np.logspace(-5.0, 0.0, num = 100, base = 10, endpoint = True)
 #Create a phi space
 phiRange = np.linspace(0.0, 2.0 * np.pi, num = 100, endpoint = False)
-weighting = [0.95]
+weighting = [0.4]
 #Total parameter space for tests
 pSpace = itertools.product(Ns, kRange, betaRange, phiRange, weighting)
 
@@ -65,7 +65,8 @@ if __name__ == '__main__':
         #Creating the file to log data
         with open(outFileName, 'w', newline= '' ) as csvFile:
             writer = csv.writer(csvFile)
-            writer.writerow(['N', 'kHalf', 'beta', 'phi', 'weighting', 'C', 'M', 'SPL', 'APL'])
+            writer.writerow(['N', 'kHalf', 'beta', 'phi', 'weighting', 'C',
+                             'M', 'SPL', 'APL'])
             writer.writerows(results)
     
         executor.shutdown(wait = False)
