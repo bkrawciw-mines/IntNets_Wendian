@@ -152,7 +152,7 @@ plt.figure()
 Srats['Sratio'].plot.hist()
 plt.xlabel(r"$\log_{10} \left( \frac{S(\phi = 0)}{S(\phi = \pi)} \right)$",
            fontdict = {'fontsize': 16})
-plt.xlim(0.0, 3.0)
+#plt.xlim(0.0, 3.0)
 plt.savefig('RandomizedHistogram.pdf', bbox_inches = 'tight')
 
 #Plot the N, K pairs tested

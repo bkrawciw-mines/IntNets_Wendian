@@ -60,7 +60,7 @@ if __name__ == '__main__':
     NKs = np.array(NKs)
     betaRange = np.logspace(-5.0, 0.0, num = 20, base = 10, endpoint = True)
     phiRange = np.array([0.0, np.pi])
-    weighting = [0.95]
+    weighting = [0.9]
     pSpace = itertools.product(NKs, betaRange, phiRange, weighting)
     #Convert iterable to properly-formatted np array
     pArray = []

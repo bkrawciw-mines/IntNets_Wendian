@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-Beta Patch
+Weighting Tests
 Benjamin Krawciw
-3/4/2023
+5/23/2023
 
-This program creates a file with supplementary data near some critical points,
-particularly beta between beta = e^-5 and beta = 1. I call
-these files "data patches." 
+This program runs a suite of tests over different values of the weighting 
+parameter s to demonstrate the effect of the weighting parameter on the shape
+of the curve for the interferometric small-world coefficient as it changes 
+with respect to rewiring parameter beta." 
 """
 
 #Library imports
@@ -20,21 +21,11 @@ from mpi4py.futures import MPIPoolExecutor
 import IntTests
 
 #Naming output file
-bpName = 'betaPatch_redundancy.csv'
+fName = 'weightingSuite.csv'
 
-#Identifying existing gridpoints in critical areas
-betaMinIndex = np.argmin(np.abs(IntTests.betaRange - np.exp(-5.0)))
-betaMaxIndex = np.argmax(IntTests.betaRange)
-betaRough = IntTests.betaRange[betaMinIndex:betaMaxIndex + 1]
-
-#Filling in grid more densely
-betaNum = (500 // len(betaRough)) * len(betaRough)
-betaFine = np.geomspace(betaRough[0], betaRough[-1], endpoint=True, 
-                        num = betaNum)
-
-phiRoughLow = IntTests.phiRange[0:5]
-phiRoughHigh = IntTests.phiRange[-5:]
-phiRough = np.concatenate((phiRoughLow, phiRoughHigh))
+#Creating new parameter space for these tests
+phiRange = [0.0] #Only curious about phi = 0.0, where effect is strangest
+sRange = np.linspace(0.01, 1.0, num = 20, endpoint = False)
 
 #Increasing redundancy
 #Redundancy for tighter statistics
@@ -47,12 +38,12 @@ for Nval in IntTests.Nrange:
 Ns = np.array(Ns)
 
 #Creating full parameter space for patch testing
-betaParams = itertools.product(
+params = itertools.product(
     Ns, 
     IntTests.kRange, 
     IntTests.betaRange, 
-    phiRough, 
-    IntTests.weighting)
+    phiRange, 
+    sRange)
 
 #Run all tests
 if __name__ == '__main__':
@@ -61,14 +52,14 @@ if __name__ == '__main__':
     
     #Run an MPI executor on the available nodes
     with MPIPoolExecutor() as executor:
-        #Use the executor to run the Stest on parameters in betaParams
-        betaResults = executor.map(IntTests.Stest, betaParams)
+        #Use the executor to run the Stest on parameters in params
+        sResults = executor.map(IntTests.Stest, params)
     
         #Creating the file to log beta patch data
-        with open(bpName, 'w', newline= '' ) as csvFile:
+        with open(fName, 'w', newline= '' ) as csvFile:
             writer = csv.writer(csvFile)
             writer.writerow(['N', 'kHalf', 'beta', 'phi', 'weighting', 'C', 'M', 'SPL', 'APL'])
-            writer.writerows(betaResults)
+            writer.writerows(sResults)
         
         executor.shutdown(wait = False)
   

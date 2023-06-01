@@ -5,7 +5,8 @@ Data Visualization
 Benjamin Krawciw
 10/3/2022
 
-This program plots the results for the small-world interferometer tests
+This program plots the results for the small-world interferometer tests over
+several values of the weighting parameter s
 """
 
 #Library imports
@@ -27,7 +28,7 @@ are going to check to see if we can find the computations and load them.
 Otherwise, we will proceed with computing the small-world coefficients. 
 '''
 #File name for computations
-compFile = "compfile.npy"
+compFile = "weightingSuite_compfile.npy"
 #Check if output file exists
 outFileExists = os.path.isfile(compFile)
 if outFileExists:
@@ -46,15 +47,8 @@ else:
 if needToCompute:   
     
     #Reading in the CSV data
-    inFileName = 'full500.csv'
+    inFileName = 'weightingSuite.csv'
     dataFrame = pd.read_csv(inFileName, delimiter = ',')
-    #Including data patches (supplemental data in sensitive areas)
-    betaPatch = 'betaPatch_redundancy.csv'
-    betaPatchFrame = pd.read_csv(betaPatch, delimiter = ',')
-    dataFrame = pd.concat((dataFrame, betaPatchFrame))
-    phiPatch = 'phiPatch.csv'
-    phiPatchFrame = pd.read_csv(phiPatch, delimiter = ',')
-    dataFrame = pd.concat((dataFrame, phiPatchFrame))
     #Treat infinite values as invalid
     dataFrame.replace([np.inf, -np.inf], np.nan, inplace = True)
     
@@ -165,9 +159,10 @@ paramStd = sortedResults.std()
 paramCounts = sortedResults.count()
 paramSDOM = paramStd / np.sqrt(paramCounts)
 paramSDOMarray = paramSDOM.to_numpy().T
-#print(paramMeans)
-#print(len(paramMeans['beta'].to_numpy()))
+print(paramMeans)
+print(len(paramMeans['beta'].to_numpy()))
 
+'''
 #Create histograms of measures
 resultFrame['baseAPL'].loc[resultFrame['phi'] == 0.0].hist(bins=20)
 plt.figure()
@@ -178,27 +173,26 @@ plt.figure()
 resultFrame['APL'].loc[resultFrame['phi'] == 0.0].hist(bins=20)
 plt.figure()
 resultFrame['Sint'].loc[resultFrame['phi'] == 0.0].hist(bins=20)
-#print(len(paramMeans['APL'].loc[paramMeans['phi'] == 0.0]))
-#print(paramCounts.loc[paramCounts['phi'] == 0.0])
+print(len(paramMeans['APL'].loc[paramMeans['phi'] == 0.0]))
+print(paramCounts.loc[paramCounts['phi'] == 0.0])
+'''
 
-
+#Plot M and APL over beta for phi = 0
 plt.figure()
-phiDex = 0
-print(paramMeans['phi'].unique()[phiDex])
-pDat = paramMeans.loc[paramMeans['phi'] == paramMeans['phi'].unique()[phiDex]]
-pDatErr = paramSDOM.loc[paramMeans['phi'] == paramMeans['phi'].unique()[phiDex]]
+pDat = paramMeans.loc[paramMeans['phi'] == paramMeans['phi'].unique()[0]]
+pDatErr = paramSDOM.loc[paramMeans['phi'] == paramMeans['phi'].unique()[0]]
 betax = np.log(pDat['beta'].to_numpy())
 plt.errorbar(betax, 
-             pDat['M'] / np.max(pDat['M']), 
-             pDatErr['M'] / np.max(pDat['M']) , 
+             pDat['M'], 
+             pDatErr['M'], 
              label = (r"$C_{int}$"),
              elinewidth=1,
              capsize=5,
              marker='.', 
              lw = 0)
 plt.errorbar(betax, 
-             pDat['APL'] / np.max(pDat['APL']) , 
-             pDatErr['APL'] / np.max(pDat['APL']) , 
+             pDat['APL'], 
+             pDatErr['APL'], 
              label = (r"APL"),
              elinewidth=1,
              capsize=5,
@@ -207,140 +201,34 @@ plt.errorbar(betax,
 
 
 '''
-S OVER BETA FOR A FEW PHI VALUES
+S OVER BETA FOR A FEW S VALUES
 Here, we plot the interferometric small-world coefficient over beta for a few 
-values of phi close to zero.
+values of s.
 '''
 
-#Plot S over beta for a few interesting places
+#Plot APL over beta for a few interesting places at phi = 0
 plt.figure()
 #Identify all unique phi values
-phis = paramMeans['phi'].unique()
-for index in np.linspace(0, (len(phis)-1) // 2, num=5, dtype=int):
-    phi = phis[index]
-    pDat = paramMeans.loc[paramMeans['phi'] == phi]
-    pDatErr = paramSDOM.loc[paramMeans['phi'] == phi]
+weightings = paramMeans['weighting'].unique()
+numWeightings = 10
+for index in range(numWeightings):
+    weightDex = index * (len(weightings) // numWeightings)
+    s = weightings[weightDex]
+    pDat = paramMeans.loc[(paramMeans['phi'] == 0.0) & 
+                          (paramMeans['weighting'] == s)]
+    print(pDat)
+    pDatErr = paramSDOM.loc[(paramMeans['phi'] == 0.0) & 
+                            (paramMeans['weighting'] == s)]
     betax = np.log(pDat['beta'].to_numpy())
     plt.errorbar(betax, 
-                 pDat['Sint'], 
-                 pDatErr['Sint'], 
-                 label = (r"$\phi$ = %0.2f" %phi),
+                 pDat['APL'], 
+                 pDatErr['APL'], 
+                 label = (r"s = %0.2f" %s),
                  elinewidth=1,
                  capsize=5,
                  marker='.', 
                  lw = 0)
 plt.legend(loc = 'lower left')
 plt.xlabel(r"log $\beta$")
-plt.ylabel(r'$S_{{int}}$')
-plt.savefig("sw_overbeta.pdf")
-
-'''
-MAX S OVER PHI
-First, for a given phi value, we look at the average small-world coefficient
-over beta, and we take the maximum. Then, we plot the maximum small-world
-coefficient over phi.
-'''
-#Group by phi values (not beta)
-phiGroups = paramMeans.groupby(['N', 'k', 'phi', 'weighting'],
-                               as_index = False)
-#Find maximum measures over beta
-betaMaxes = phiGroups.max()
-
-#Locate those maxima in paramMeans
-def locateMaxes(series, array):
-    locations = []
-    for item in series:
-        location = int(np.argwhere(array == item)[0])
-        locations.append(location)
-    return np.array(locations)
-maxSintLoc = locateMaxes(betaMaxes['Sint'], paramMeansArray[18])
-maxSrealLoc = locateMaxes(betaMaxes['Sreal'], paramMeansArray[17])
-
-#Record the corresponding SDOM
-maxSintSDOM = np.array([paramSDOMarray[18, index] for index in maxSintLoc])
-maxSrealSDOM = np.array([paramSDOMarray[17, index] for index in maxSrealLoc])
-
-#Since this plot involves maxima on a grid, additional error in case true max
-#is between grid points. 
-#Estimate this error with grid spacing and derivative of S
-def gridErrs(maxes, locs, vals):
-    #Create output vector for errors
-    out = np.zeros(len(maxes))
-    
-    #Identify the beta scale
-    betas = paramMeans['beta'].unique()
-    
-    #For each maxVal,
-    for index, loc in enumerate(locs):
-        
-        #Find the associated beta value
-        beta = paramMeansArray[2, index]
-        print(beta)
-        
-        #Place in val for max
-        valLoc = np.argmin(np.abs(vals[index] - maxes[index]))
-        print(valLoc)
-        
-        #Estimate abs of derivative around max and grid spacing
-        #If max is at the left end, only use forward points
-        if beta == np.min(betas):
-            spacing = np.abs(betas[1] - betas[0])
-            Splus = vals[index][valLoc + 1]
-            Sderiv = (Splus - maxes[index]) / spacing
-            err = Sderiv * spacing
-        #If max is at the right end, only use the backward points
-        elif beta == np.max(betas):
-            spacing = np.abs(betas[-1] - betas[-2])
-            Sminus = vals[index][valLoc - 1]
-            Sderiv = np.abs(maxes[index] - Sminus) / spacing
-            err = Sderiv * spacing
-        #Otherise, average forward and backward points
-        else:
-            betaLoc = np.argmin(np.abs(betas - beta))
-            spacePlus = np.abs(betas[betaLoc + 1] - beta)
-            Splus = vals[index][valLoc + 1]
-            Sminus = vals[index][valLoc - 1]
-            spaceMinus = np.abs(beta - betas[betaLoc - 1])
-            spacing = 0.5 * (spacePlus + spaceMinus)
-            derivPlus = np.abs(Splus - maxes[index]) / spacePlus
-            derivMinus = np.abs(maxes[index] - Sminus) / spaceMinus
-            err = (derivPlus + derivMinus) * spacing / 2.0
-        #Record error
-        out[index] = err
-    return(out)
-
-#Create arrays of the S values for each trial
-phiGroupSreals = phiGroups['Sreal'].agg(lambda x: list(x))['Sreal'].to_numpy()
-phiGroupSints = phiGroups['Sint'].agg(lambda x: list(x))['Sint'].to_numpy()
-#Compute the grid errors
-realGridErr = gridErrs(betaMaxes['Sreal'], maxSrealLoc, phiGroupSreals)
-intGridErr = gridErrs(betaMaxes['Sint'], maxSintLoc, phiGroupSints)
-print(intGridErr)
-
-#Combine all sources of error
-#maxSintSDOM = np.sqrt(maxSintSDOM**2 + intGridErr**2)
-#maxSrealSDOM = np.sqrt(maxSrealSDOM**2 + realGridErr**2)
- 
-
-#Plot Smax over phi
-plt.figure()
-plt.errorbar(betaMaxes['phi'], 
-             betaMaxes['Sint'], 
-             maxSintSDOM, 
-             label = r'$S_{int}$',
-             elinewidth=1,
-             capsize=5,
-             marker='.', 
-             lw = 0)
-plt.errorbar(betaMaxes['phi'], 
-             betaMaxes['Sreal'], 
-             maxSrealSDOM, 
-             label = r'$S_{real}$',
-             elinewidth=1,
-             capsize=5,
-             marker='.', 
-             lw = 0)
-plt.xlabel(r'$\phi$')
-plt.ylabel('S')
-plt.legend()
-plt.savefig("sw_overphi.pdf")
+plt.ylabel(r'APL')
+plt.savefig("weightings_APL_overbeta.pdf")

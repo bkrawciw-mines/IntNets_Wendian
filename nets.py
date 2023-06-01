@@ -19,8 +19,8 @@ from time import time
 #Create a random number generator
 rng = np.random.default_rng(int(time()))
 
-#Tolerance for numerical things
-TOL = 1e-8
+#Tolerance for numerical things, particularly path strengths
+TOL = 1e-200
     
 #Creates a ring network
 def makeRing(N, khalf):
@@ -77,7 +77,7 @@ def ws(params):
     rewired = rewire(ring, beta)
     
     #Add phase
-    w = (weighting * (1.0 /  khalf)) * np.exp(1.0j * phi)
+    w = (weighting * (0.5 /  khalf)) * np.exp(1.0j * phi)
     W = rewired.astype(complex) * w 
     
     #Return adjacency matrix as a sparse matrix
@@ -174,10 +174,10 @@ def APL(W):
     #The matrix inverse has limited precision. Ignore anything too small.
     Pmasked = ma.masked_less(abs(P), TOL)
     #Convert to path lengths with a logarithm
-    APL = (-np.log(Pmasked, where = np.greater(abs(P), TOL))).mean()
+    APL = (-np.log(Pmasked)).mean()
     return(APL)
 
-
+'''
 #Testing the functions
 ring = makeRing(100, 18)
 #print(ring)
@@ -185,7 +185,7 @@ rewired = rewire(ring, 0.1)
 #print(rewired)
 W = ws([100, 8, 1.0, np.pi / 4, 0.95])
 #print(W.diagonal())
-print(W.todense())
+#print(W)
 Cr = Creal(W)
 print(Cr)
 M = Mesh(W)
@@ -194,3 +194,4 @@ ap = APL(W)
 print(ap)
 sps = SPL(W)
 print(sps)
+'''

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+0#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Interferometer Small-World Tests
@@ -35,7 +35,7 @@ kRange = [6]
 betaRange = np.logspace(-5.0, 0.0, num = 100, base = 10, endpoint = True)
 #Create a phi space
 phiRange = np.linspace(0.0, 2.0 * np.pi, num = 100, endpoint = False)
-weighting = [0.4]
+weighting = [0.9]
 #Total parameter space for tests
 pSpace = itertools.product(Ns, kRange, betaRange, phiRange, weighting)
 

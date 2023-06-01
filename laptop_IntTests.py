@@ -18,13 +18,10 @@ import itertools
 #Name for the output file
 outFileName = 'thick100.csv'
 
-#Name for the output file
-outFileName = 'thick100.csv'
-
 #Create the parameter space for testing
-Nrange = [100]
+Nrange = [500]
 #Redundancy for tighter statistics
-redundancy = 1
+redundancy = 10
 Ns = []
 #Small networks need more trials
 for Nval in Nrange:
@@ -33,10 +30,10 @@ for Nval in Nrange:
 Ns = np.array(Ns)
 kRange = [6]
 #Create a beta space
-betaRange = np.logspace(-5.0, 0.0, num = 20, base = 10, endpoint = True)
+betaRange = np.logspace(-5.0, 0.0, num = 10, base = 10, endpoint = True)
 #Create a phi space
-phiRange = np.linspace(0.0, 2.0 * np.pi, num = 20, endpoint = False)
-weighting = [0.95]
+phiRange = np.linspace(0.0, 2.0 * np.pi, num = 1, endpoint = False)
+weighting = [0.5]
 #Total parameter space for tests
 pSpace = itertools.product(Ns, kRange, betaRange, phiRange, weighting)
 
