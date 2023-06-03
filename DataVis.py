@@ -184,7 +184,7 @@ resultFrame['Sint'].loc[resultFrame['phi'] == 0.0].hist(bins=20)
 
 plt.figure()
 phiDex = 0
-print(paramMeans['phi'].unique()[phiDex])
+#print(paramMeans['phi'].unique()[phiDex])
 pDat = paramMeans.loc[paramMeans['phi'] == paramMeans['phi'].unique()[phiDex]]
 pDatErr = paramSDOM.loc[paramMeans['phi'] == paramMeans['phi'].unique()[phiDex]]
 betax = np.log(pDat['beta'].to_numpy())
@@ -216,7 +216,8 @@ values of phi close to zero.
 plt.figure()
 #Identify all unique phi values
 phis = paramMeans['phi'].unique()
-for index in np.linspace(0, (len(phis)-1) // 2, num=5, dtype=int):
+print(phis)
+for index in np.linspace(0, (len(phis)-1) // 4, num=5, dtype=int):
     phi = phis[index]
     pDat = paramMeans.loc[paramMeans['phi'] == phi]
     pDatErr = paramSDOM.loc[paramMeans['phi'] == phi]
@@ -228,6 +229,7 @@ for index in np.linspace(0, (len(phis)-1) // 2, num=5, dtype=int):
                  elinewidth=1,
                  capsize=5,
                  marker='.', 
+                 ecolor = 'k',
                  lw = 0)
 plt.legend(loc = 'lower left')
 plt.xlabel(r"log $\beta$")
@@ -275,11 +277,11 @@ def gridErrs(maxes, locs, vals):
         
         #Find the associated beta value
         beta = paramMeansArray[2, index]
-        print(beta)
+        #print(beta)
         
         #Place in val for max
         valLoc = np.argmin(np.abs(vals[index] - maxes[index]))
-        print(valLoc)
+        #print(valLoc)
         
         #Estimate abs of derivative around max and grid spacing
         #If max is at the left end, only use forward points
@@ -315,11 +317,11 @@ phiGroupSints = phiGroups['Sint'].agg(lambda x: list(x))['Sint'].to_numpy()
 #Compute the grid errors
 realGridErr = gridErrs(betaMaxes['Sreal'], maxSrealLoc, phiGroupSreals)
 intGridErr = gridErrs(betaMaxes['Sint'], maxSintLoc, phiGroupSints)
-print(intGridErr)
+#print(intGridErr)
 
 #Combine all sources of error
-#maxSintSDOM = np.sqrt(maxSintSDOM**2 + intGridErr**2)
-#maxSrealSDOM = np.sqrt(maxSrealSDOM**2 + realGridErr**2)
+maxSintSDOM = np.sqrt(maxSintSDOM**2 + intGridErr**2)
+maxSrealSDOM = np.sqrt(maxSrealSDOM**2 + realGridErr**2)
  
 
 #Plot Smax over phi
@@ -331,6 +333,7 @@ plt.errorbar(betaMaxes['phi'],
              elinewidth=1,
              capsize=5,
              marker='.', 
+             ecolor = 'k',
              lw = 0)
 plt.errorbar(betaMaxes['phi'], 
              betaMaxes['Sreal'], 
@@ -339,6 +342,7 @@ plt.errorbar(betaMaxes['phi'],
              elinewidth=1,
              capsize=5,
              marker='.', 
+             ecolor = 'k',
              lw = 0)
 plt.xlabel(r'$\phi$')
 plt.ylabel('S')
