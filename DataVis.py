@@ -213,7 +213,7 @@ values of phi close to zero.
 '''
 
 #Plot S over beta for a few interesting places
-plt.figure()
+plt.figure(figsize=[4, 3])
 #Identify all unique phi values
 phis = paramMeans['phi'].unique()
 print(phis)
@@ -234,6 +234,7 @@ for index in np.linspace(0, (len(phis)-1) // 4, num=5, dtype=int):
 plt.legend(loc = 'lower left')
 plt.xlabel(r"log $\beta$")
 plt.ylabel(r'$S_{{int}}$')
+plt.tight_layout()
 plt.savefig("sw_overbeta.pdf")
 
 '''
@@ -325,7 +326,7 @@ maxSrealSDOM = np.sqrt(maxSrealSDOM**2 + realGridErr**2)
  
 
 #Plot Smax over phi
-plt.figure()
+plt.figure(figsize=[4, 3])
 plt.errorbar(betaMaxes['phi'], 
              betaMaxes['Sint'], 
              maxSintSDOM, 
@@ -347,4 +348,5 @@ plt.errorbar(betaMaxes['phi'],
 plt.xlabel(r'$\phi$')
 plt.ylabel('S')
 plt.legend()
+plt.tight_layout()
 plt.savefig("sw_overphi.pdf")

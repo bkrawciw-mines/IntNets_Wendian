@@ -148,10 +148,10 @@ def Sratios(Smax):
 Srats = Sratios(SmaxBeta)
 
 #Create histogram of S ratios
-plt.figure()
+plt.figure(figsize=[4, 3])
 Srats['Sratio'].plot.hist()
 plt.xlabel(r"$\log_{10} \left( \frac{S(\phi = 0)}{S(\phi = \pi)} \right)$",
-           fontdict = {'fontsize': 16})
+           fontdict = {'fontsize': 12})
 #plt.xlim(0.0, 3.0)
 plt.savefig('RandomizedHistogram.pdf', bbox_inches = 'tight')
 
@@ -165,4 +165,5 @@ ax.set(xlabel = 'N',
        ylabel = 'k'
        #title = 'Networks tested for Small-World Dissipation')
        )
+plt.tight_layout()
 fig.savefig('RandParams.pdf', bbox_inches = 'tight')
