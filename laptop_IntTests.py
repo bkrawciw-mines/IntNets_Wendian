@@ -5,8 +5,8 @@ Interferometer Small-World Tests
 Benjamin Krawciw
 9/30/2022
 
-Creates a suite of watts-strogatz interferometers, computes their small-world 
-coefficients, and saves them. This version runs in serial on a laptop.
+Creates a suite of watts-strogatz interferometers, computes their network 
+measures, and saves them using an multi-threading on a PC.
 """
 
 #Library imports
@@ -14,14 +14,16 @@ import numpy as np
 import nets
 import csv
 import itertools
+from time import time
+import concurrent.futures as fut
 
 #Name for the output file
-outFileName = 'thick100.csv'
+outFileName = 'full500.csv'
 
 #Create the parameter space for testing
 Nrange = [500]
 #Redundancy for tighter statistics
-redundancy = 10
+redundancy = 100
 Ns = []
 #Small networks need more trials
 for Nval in Nrange:
@@ -30,16 +32,16 @@ for Nval in Nrange:
 Ns = np.array(Ns)
 kRange = [6]
 #Create a beta space
-betaRange = np.logspace(-5.0, 0.0, num = 10, base = 10, endpoint = True)
+betaRange = np.logspace(-5.0, 0.0, num = 100, base = 10, endpoint = True)
 #Create a phi space
-phiRange = np.linspace(0.0, 2.0 * np.pi, num = 1, endpoint = False)
-weighting = [0.5]
+phiRange = np.linspace(0.0, 2.0 * np.pi, num = 100, endpoint = False)
+weighting = [0.9]
 #Total parameter space for tests
 pSpace = itertools.product(Ns, kRange, betaRange, phiRange, weighting)
 
 #Function for each independent test
 def Stest(params):
-    print('sTest', params)
+    #print('sTest', params)
     #Create a WS interferometer 
     W = nets.ws(params)
     
@@ -52,12 +54,23 @@ def Stest(params):
 
 #Run all tests
 if __name__ == '__main__':
-    results = map(Stest, pSpace)
+    #Start a timer
+    tStart = time()
     
-    #Creating the file to log data
-    with open(outFileName, 'w', newline= '' ) as csvFile:
-        writer = csv.writer(csvFile)
-        writer.writerow(['N', 'kHalf', 'beta', 'phi', 'weighting', 'C', 'M', 
-                         'SPL', 'APL'])
-        writer.writerows(results)
-        
+    #Run an MPI executor on the available nodes
+    with fut.ThreadPoolExecutor() as executor:
+        #Use the executor to run the Stest process on parameters in pSpace
+        results = executor.map(Stest, pSpace)
+    
+        #Creating the file to log data
+        with open(outFileName, 'w', newline= '' ) as csvFile:
+            writer = csv.writer(csvFile)
+            writer.writerow(['N', 'kHalf', 'beta', 'phi', 'weighting', 'C',
+                             'M', 'SPL', 'APL'])
+            writer.writerows(results)
+    
+        executor.shutdown(wait = False)
+  
+    #Report the execution time
+    print("Tests completed. Time: %f s" % (time() - tStart))
+    
