@@ -210,7 +210,7 @@ values of phi close to zero.
 '''
 
 #Plot S over beta for a few interesting places
-plt.figure(figsize=[4, 3])
+plt.figure(figsize=[6, 4])
 #Identify all unique phi values
 phis = paramMeans['phi'].unique()
 print(phis)
@@ -224,13 +224,13 @@ for index in [0, 1]:
                  pDatErr['Sint'], 
                  label = (r"$\phi$ = %0.2f" %phi),
                  elinewidth=1,
-                 capsize=5,
+                 capsize=1,
                  marker='.', 
                  ecolor = 'k',
                  lw = 0)
-plt.legend(loc = 'lower left')
+plt.legend(loc = 'upper left')
 plt.xlabel(r"log $\beta$")
-plt.ylabel(r'$S_{{int}}$')
+plt.ylabel(r'$S_{\mathrm{int}}$')
 plt.tight_layout()
 plt.savefig("sw_overbeta_phaseVar.pdf")
 
@@ -323,22 +323,22 @@ maxSrealSDOM = np.sqrt(maxSrealSDOM**2 + realGridErr**2)
  
 
 #Plot Smax over phi
-plt.figure(figsize=[4, 3])
+plt.figure(figsize=[6, 4])
 plt.errorbar(betaMaxes['phi'], 
              betaMaxes['Sint'], 
              maxSintSDOM, 
-             label = r'$S_{int}$',
+             label = r'$S_\mathrm{int}$',
              elinewidth=1,
-             capsize=5,
+             capsize=1,
              marker='.', 
              ecolor = 'k',
              lw = 0)
 plt.errorbar(betaMaxes['phi'], 
              betaMaxes['Sreal'], 
              maxSrealSDOM, 
-             label = r'$S_{real}$',
+             label = r'$S_\mathrm{real}$',
              elinewidth=1,
-             capsize=5,
+             capsize=1,
              marker='.', 
              ecolor = 'k',
              lw = 0)
