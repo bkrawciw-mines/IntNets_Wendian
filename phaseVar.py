@@ -14,7 +14,7 @@ import numpy as np
 import nets
 import csv
 import itertools
-import concurrent.futures as fut
+from mpi4py.futures import MPIPoolExecutor
 from time import time
 import scipy.sparse as sparse
 
@@ -54,7 +54,7 @@ for Nval in Nrange:
 Ns = np.array(Ns)
 kRange = [6]
 #Create a beta space
-betaRange = np.logspace(-5.0, 0.0, num = 10, base = 10, endpoint = True)
+betaRange = np.logspace(-5.0, 0.0, num = 100, base = 10, endpoint = True)
 #Create a phi space
 phiRange = [0.0, np.pi]
 weighting = [0.9]
@@ -88,7 +88,10 @@ if __name__ == '__main__':
     #Start a timer
     tStart = time()
     
-    results = map(Stest, pSpace)
+    #Run an MPI executor on the available nodes
+    with MPIPoolExecutor() as executor:
+        #Use the executor to run the Stest process on parameters in pSpace
+        results = executor.map(Stest, pSpace)
 
     #Creating the file to log data
     with open(outFileName, 'w', newline= '' ) as csvFile:

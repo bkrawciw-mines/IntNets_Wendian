@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Data Visualization
+Data Visualization (for phaseVar)
 Benjamin Krawciw
-10/3/2022
+10/3/2023
 
 This program plots the results for the small-world interferometer tests
 """
@@ -27,7 +27,7 @@ are going to check to see if we can find the computations and load them.
 Otherwise, we will proceed with computing the small-world coefficients. 
 '''
 #File name for computations
-compFile = "compfile.npy"
+compFile = "compfile_phaseVar.npy"
 #Check if output file exists
 outFileExists = os.path.isfile(compFile)
 if outFileExists:
@@ -46,15 +46,15 @@ else:
 if needToCompute:   
     
     #Reading in the CSV data
-    inFileName = 'full500.csv'
+    inFileName = 'phaseVar.csv'
     dataFrame = pd.read_csv(inFileName, delimiter = ',')
     #Including data patches (supplemental data in sensitive areas)
     betaPatch = 'betaPatch_redundancy.csv'
     betaPatchFrame = pd.read_csv(betaPatch, delimiter = ',')
-    dataFrame = pd.concat((dataFrame, betaPatchFrame))
+    #dataFrame = pd.concat((dataFrame, betaPatchFrame))
     phiPatch = 'phiPatch.csv'
     phiPatchFrame = pd.read_csv(phiPatch, delimiter = ',')
-    dataFrame = pd.concat((dataFrame, phiPatchFrame))
+    #dataFrame = pd.concat((dataFrame, phiPatchFrame))
     #Treat infinite values as invalid
     dataFrame.replace([np.inf, -np.inf], np.nan, inplace = True)
     
@@ -214,7 +214,7 @@ plt.figure(figsize=[4, 3])
 #Identify all unique phi values
 phis = paramMeans['phi'].unique()
 print(phis)
-for index in np.linspace(0, (len(phis)-1) // 4, num=5, dtype=int):
+for index in [0, 1]:
     phi = phis[index]
     pDat = paramMeans.loc[paramMeans['phi'] == phi]
     pDatErr = paramSDOM.loc[paramMeans['phi'] == phi]
@@ -232,7 +232,7 @@ plt.legend(loc = 'lower left')
 plt.xlabel(r"log $\beta$")
 plt.ylabel(r'$S_{{int}}$')
 plt.tight_layout()
-plt.savefig("sw_overbeta.pdf")
+plt.savefig("sw_overbeta_phaseVar.pdf")
 
 '''
 MAX S OVER PHI
@@ -346,4 +346,4 @@ plt.xlabel(r'$\phi$')
 plt.ylabel('S')
 plt.legend()
 plt.tight_layout()
-plt.savefig("sw_overphi.pdf")
+plt.savefig("sw_overphi_phaseVar.pdf")
